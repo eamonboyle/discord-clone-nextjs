@@ -1,0 +1,28 @@
+import { redirect } from "next/navigation";
+
+import { initialProfile } from "@/lib/inital-profile";
+import { db } from "@/lib/db";
+
+const SetupPage = async () => {
+  const profile = await initialProfile();
+
+  // find the first server of the user
+  const server = await db.server.findFirst({
+    where: {
+      members: {
+        some: {
+          profileId: profile.id,
+        },
+      },
+    },
+  });
+
+  // if the user has a server, redirect to it
+  if (server) {
+    return redirect(`/servers/${server.id}`);
+  }
+
+  return <div>Create a Server</div>;
+};
+
+export default SetupPage;
