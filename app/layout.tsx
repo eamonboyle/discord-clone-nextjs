@@ -8,30 +8,32 @@ import { cn } from "@/lib/utils";
 const font = Open_Sans({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Team Chat Application",
-  description: "Team chat application",
+    title: "Team Chat Application",
+    description: "Team chat application",
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) {
-  return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body className={cn(font.className, "bg-white dark:bg-[#313338]")}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            // forcedTheme="dark"
-            enableSystem={false}
-            storageKey="discord-theme"
-          >
-            {children}
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
-  );
+    return (
+        <ClerkProvider>
+            <html lang="en" suppressHydrationWarning>
+                <body
+                    className={cn(font.className, "bg-white dark:bg-[#313338]")}
+                >
+                    <ThemeProvider
+                        attribute="class"
+                        defaultTheme="dark"
+                        // forcedTheme="dark"
+                        enableSystem={false}
+                        storageKey="discord-theme"
+                    >
+                        {children}
+                    </ThemeProvider>
+                </body>
+            </html>
+        </ClerkProvider>
+    );
 }

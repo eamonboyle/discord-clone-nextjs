@@ -1,88 +1,142 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
-}
-
-model Profile {
-  id       String @id @default(uuid())
-  userId   String @unique
-  name     String
-  imageUrl String @db.Text
-  email    String @unique
-
-  servers  Server[]
-  members  Member[]
-  channels Channel[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Server {
-  id         String @id @default(uuid())
-  name       String
-  imageUrl   String @db.Text
-  inviteCode String @db.Text
-
-  profileId String
-  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  members  Member[]
-  channels Channel[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([profileId])
-}
-
-enum MemberRole {
-  ADMIN
-  MODERATOR
-  GUEST
-}
-
-model Member {
-  id        String     @id @default(uuid())
-  role      MemberRole
-  profileId String
-  profile   Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  serverId String
-  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([profileId])
-  @@index([serverId])
-}
-
-enum ChannelType {
-  TEXT
-  AUDIO
-  VIDEO
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
 }
 
 model Channel {
-  id   String      @id @default(uuid())
-  name String
-  type ChannelType @default(TEXT)
+    id   String       @id
+    name String
+    type Channel_type @default(TEXT)
 
-  profileId String
-  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    profileId String
+    Profile   Profile @relation(fields: [profileId], references: [id])
 
-  serverId String
-  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+    serverId String
+    Server   Server @relation(fields: [serverId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime
 
-  @@index([profileId])
-  @@index([serverId])
+    @@index([profileId])
+    @@index([serverId])
+}
+
+model Member {
+    id   String     @id @default(uuid())
+    role MemberRole @default(GUEST)
+
+    profileId String
+    profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+    serverId String
+    server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([profileId])
+    @@index([serverId])
+}
+
+model Profile {
+    id       String @id @default(uuid())
+    userId   String @unique
+    name     String
+    imageUrl String @db.Text
+    email    String @db.Text
+
+    servers  Server[]
+    members  Member[]
+    channels Channel[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Server {
+    id         String @id @default(uuid())
+    name       String
+    imageUrl   String @db.Text
+    inviteCode String @unique
+
+    profileId String
+    profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+    members  Member[]
+    channels Channel[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([profileId])
+}
+
+enum MemberRole {
+    ADMIN
+    MODERATOR
+    GUEST
+}
+
+enum Channel_type {
+    TEXT
+    AUDIO
+    VIDEO
+}
+
+// ASK PDF TABLES
+
+model AskPDF_User {
+    id    String @id @unique // matches kinde user id
+    email String @unique
+
+    File    AskPDF_File[]
+    Message AskPDF_Message[]
+
+    stripeCustomerId       String?   @unique @map(name: "stripe_customer_id") // stripe customer id
+    stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id") // stripe subscription id
+    stripePriceId          String?   @unique @map(name: "stripe_price_id") // stripe price id
+    stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end") // stripe current period end
+}
+
+enum AskPDF_UploadStatus {
+    PENDING
+    PROCESSING
+    FAIL
+    SUCCESS
+}
+
+model AskPDF_File {
+    id            String              @id @default(cuid())
+    name          String
+    uploadStatus  AskPDF_UploadStatus @default(PENDING)
+    url           String
+    key           String
+    messages      AskPDF_Message[]
+    createdAt     DateTime            @default(now())
+    updatedAt     DateTime            @updatedAt
+    AskPDF_User   AskPDF_User?        @relation(fields: [askPDF_UserId], references: [id])
+    askPDF_UserId String?
+
+    @@index([askPDF_UserId])
+}
+
+model AskPDF_Message {
+    id   String @id @default(cuid())
+    text String @db.Text
+
+    isUserMessage Boolean
+    createdAt     DateTime     @default(now())
+    updatedAt     DateTime     @updatedAt
+    AskPDF_User   AskPDF_User? @relation(fields: [askPDF_UserId], references: [id])
+    askPDF_UserId String?
+    AskPDF_File   AskPDF_File? @relation(fields: [askPDF_FileId], references: [id])
+    askPDF_FileId String?
+
+    @@index([askPDF_UserId])
+    @@index([askPDF_FileId])
 }
