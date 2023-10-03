@@ -100,6 +100,7 @@ export const CreateServerModal = () => {
                                                 value={field.value}
                                                 onChange={field.onChange}
                                             />
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
